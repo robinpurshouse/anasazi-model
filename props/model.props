@@ -1,0 +1,27 @@
+random.seed = 1
+count.of.agents = 14
+board.size.x = 80
+board.size.y = 120
+proc.per.x = 1
+proc.per.y = 1
+grid.buffer = 0
+
+start.year = 800
+end.year = 1350
+max.store.year = 2
+max.storage = 1600
+household.need = 800
+min.fission.age = 17
+max.fission.age = 27
+min.death.age = 25
+max.death.age = 36
+max.distance = 1000
+initial.min.corn = 1000
+initial.max.corn = 1600
+annual.variance = 0.10000
+spatial.variance = 0.10000
+fertility.prop = 0.11489
+harvest.adj = 0.97621
+new.household.ini.maize = 0.33000
+
+result.file = NumberOfHousehold.csv

@@ -1,0 +1,9 @@
+MPICXX=$(HOME)/sfw/MPICH/bin/mpicxx -std=c++11 -w
+
+BOOST_INCLUDE=-I$(HOME)/sfw/Boost/Boost_1.61/include/
+BOOST_LIB_DIR=-L$(HOME)/sfw/Boost/Boost_1.61/lib/
+BOOST_LIBS=-lboost_mpi-mt -lboost_serialization-mt -lboost_system-mt -lboost_filesystem-mt
+
+REPAST_HPC_INCLUDE=-I$(HOME)/sfw/repast_hpc-2.3.0/include
+REPAST_HPC_LIB_DIR=-L$(HOME)/sfw/repast_hpc-2.3.0/lib
+REPAST_HPC_LIB=-lrepast_hpc-2.3.0 -lrelogo-2.3.0
