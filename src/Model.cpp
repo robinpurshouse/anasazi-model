@@ -132,8 +132,8 @@ void AnasaziModel::initAgents()
 	readCsvPdsi();
 	readCsvHydro();
 	int noOfAgents  = repast::strToInt(props->getProperty("count.of.agents"));
-	repast::IntUniformGenerator xGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeX));
-	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY));
+	repast::IntUniformGenerator xGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeX-1));
+	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY-1));
 	for(int i =0; i< noOfAgents;i++)
 	{
 		repast::AgentId id(houseID, rank, 2);
@@ -750,7 +750,7 @@ bool AnasaziModel::relocateHousehold(Household* household)
 				locationSpace->getLocation((&**it1)->getId(),point1);
 				for (std::vector<Location*>::iterator it2 = waterSources.begin() ; it2 != waterSources.end(); ++it2)
 				{
-					locationSpace->getLocation((&**it1)->getId(),point2);
+					locationSpace->getLocation((&**it2)->getId(),point2);
 					double distance = sqrt(pow((point1[0]-point2[0]),2) + pow((point1[1]-point2[1]),2));
 					distances.push_back(distance);
 				}
