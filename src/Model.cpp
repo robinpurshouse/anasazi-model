@@ -621,7 +621,7 @@ bool AnasaziModel::fieldSearch(Household* household)
 			Location* tempLoc = (&**it);
 			if(tempLoc->getState() == 0)
 			{
-				if(tempLoc->getExpectedYield() >= 800)
+				if(tempLoc->getExpectedYield() >= param.householdNeed)
 				{
 					std::vector<int> loc;
 					locationSpace->getLocation(tempLoc->getId(), loc);
