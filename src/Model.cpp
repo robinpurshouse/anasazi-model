@@ -625,7 +625,6 @@ bool AnasaziModel::fieldSearch(Household* household)
 				{
 					std::vector<int> loc;
 					locationSpace->getLocation(tempLoc->getId(), loc);
-					tempLoc->setState(2);
 					household->chooseField(tempLoc);
 					goto EndOfLoop;
 				}

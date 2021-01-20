@@ -71,5 +71,11 @@ void Household::nextYear(int needs)
 
 void Household::chooseField(Location* Field)
 {
+	//set the old location as emtpy
+	if (assignedField!=NULL) assignedField->setState(0);
+
+	//set the new location as a field
+	Field->setState(2);
+
 	assignedField = Field;
 }
