@@ -558,47 +558,47 @@ void  AnasaziModel::updateLocationProperties()
 
 void AnasaziModel::updateHouseholdProperties()
 {
-	repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
-	repast::SharedContext<Household>::const_iterator local_agents_end = context.end();
+	int noOfAgents = context.size();
+    std::vector<Household*> agents;
+    context.selectAgents(repast::SharedContext<Household>::LOCAL, noOfAgents, agents);
+    std::vector<Household*>::iterator it = agents.begin();
+    while(it != agents.end()) {
+        Household* household;
+        household = (*it);
+        if(household->death())
+        {
+            removeHousehold(household);
+        }
+        else
+        {
+            if(household->fission(param.minFissionAge,param.maxFissionAge, fissionGen->next(), param.fertilityProbability))
+            {
+                int rank = repast::RepastProcess::instance()->rank();
+                repast::AgentId id(houseID, rank, 2);
+                int mStorage = household->splitMaizeStored(param.maizeStorageRatio);
+                Household* newAgent = new Household(id, 0, deathAgeGen->next(), mStorage);
+                context.addAgent(newAgent);
 
-	while(local_agents_iter != local_agents_end)
-	{
-		Household* household = (&**local_agents_iter);
-		if(household->death())
-		{
-			local_agents_iter++;
-			removeHousehold(household);
+                std::vector<int> loc;
+                householdSpace->getLocation(household->getId(), loc);
+                householdSpace->moveTo(id, repast::Point<int>(loc[0], loc[1]));
+                fieldSearch(newAgent);
+                houseID++;
+            }
 
-		}
-		else
-		{
-			local_agents_iter++;
-			if(household->fission(param.minFissionAge,param.maxFissionAge, fissionGen->next(), param.fertilityProbability))
-			{
-				int rank = repast::RepastProcess::instance()->rank();
-				repast::AgentId id(houseID, rank, 2);
-				int mStorage = household->splitMaizeStored(param.maizeStorageRatio);
-				Household* newAgent = new Household(id, 0, deathAgeGen->next(), mStorage);
-				context.addAgent(newAgent);
-
-				std::vector<int> loc;
-				householdSpace->getLocation(household->getId(), loc);
-				householdSpace->moveTo(id, repast::Point<int>(loc[0], loc[1]));
-				fieldSearch(newAgent);
-				houseID++;
-			}
-
-			bool fieldFound = true;
-			if(!(household->checkMaize(param.householdNeed)))
-			{
-				fieldFound = fieldSearch(household);
-			}
-			if(fieldFound)
-			{
-				household->nextYear(param.householdNeed);
-			}
-		}
-	}
+            bool fieldFound = true;
+            if(!(household->checkMaize(param.householdNeed)))
+            {
+                fieldFound = fieldSearch(household);
+            }
+            if(fieldFound)
+            {
+                household->nextYear(param.householdNeed);
+            }
+            
+        }
+        it++;
+    }
 }
 
 bool AnasaziModel::fieldSearch(Household* household)
