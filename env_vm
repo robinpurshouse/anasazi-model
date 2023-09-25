@@ -11,5 +11,5 @@ REPAST_HPC_INCLUDE=-isystem $(HOME)/sfw/repast_hpc-$(REPASTVERSION)/include
 REPAST_HPC_LIB_DIR=-L$(HOME)/sfw/repast_hpc-$(REPASTVERSION)/lib
 REPAST_HPC_LIB=-lrepast_hpc-$(REPASTVERSION) -lrelogo-$(REPASTVERSION)
 
-LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(HOME)/sfw/boost/boost_$(BOOST_VERSION)/stage/lib -Wl,-rpath -Wl,$(HOME)/sfw/repast_hpc-$(REPASTVERSION)/lib
+LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(HOME)/sfw/Boost/Boost_$(BOOST_VERSION)/lib -Wl,-rpath -Wl,$(HOME)/sfw/repast_hpc-$(REPASTVERSION)/lib
 
