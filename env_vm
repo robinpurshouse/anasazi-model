@@ -1,0 +1,15 @@
+MPICXX=$(HOME)/sfw/MPICH/bin/mpicxx
+
+REPASTVERSION=2.3.0
+BOOST_VERSION=1.61
+
+BOOST_INCLUDE=-isystem $(HOME)/sfw/Boost/Boost_$(BOOST_VERSION)/include/
+BOOST_LIB_DIR=-L$(HOME)/sfw/Boost/Boost_$(BOOST_VERSION)/lib/
+BOOST_LIBS=-lboost_mpi-mt -lboost_serialization-mt -lboost_system-mt -lboost_filesystem-mt
+
+REPAST_HPC_INCLUDE=-isystem $(HOME)/sfw/repast_hpc-$(REPASTVERSION)/include
+REPAST_HPC_LIB_DIR=-L$(HOME)/sfw/repast_hpc-$(REPASTVERSION)/lib
+REPAST_HPC_LIB=-lrepast_hpc-$(REPASTVERSION) -lrelogo-$(REPASTVERSION)
+
+LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(HOME)/sfw/Boost/Boost_$(BOOST_VERSION)/lib -Wl,-rpath -Wl,$(HOME)/sfw/repast_hpc-$(REPASTVERSION)/lib
+

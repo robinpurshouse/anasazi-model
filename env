@@ -1,9 +1,15 @@
-MPICXX=$(HOME)/sfw/MPICH/bin/mpicxx -std=c++11 -w
+MPICXX=/usr/bin/mpicxx
 
-BOOST_INCLUDE=-I$(HOME)/sfw/Boost/Boost_1.61/include/
-BOOST_LIB_DIR=-L$(HOME)/sfw/Boost/Boost_1.61/lib/
-BOOST_LIBS=-lboost_mpi-mt -lboost_serialization-mt -lboost_system-mt -lboost_filesystem-mt
+REPASTVERSION=2.3.1
+BOOST_VERSION=1_82_0
 
-REPAST_HPC_INCLUDE=-I$(HOME)/sfw/repast_hpc-2.3.0/include
-REPAST_HPC_LIB_DIR=-L$(HOME)/sfw/repast_hpc-2.3.0/lib
-REPAST_HPC_LIB=-lrepast_hpc-2.3.0 -lrelogo-2.3.0
+BOOST_INCLUDE=-isystem $(HOME)/software/boost/boost_$(BOOST_VERSION)
+BOOST_LIB_DIR=-L$(HOME)/software/boost/boost_$(BOOST_VERSION)/stage/lib
+BOOST_LIBS=-lboost_mpi -lboost_serialization -lboost_filesystem -lboost_system
+
+REPAST_HPC_INCLUDE=-isystem $(HOME)/software/repast_hpc-$(REPASTVERSION)/include
+REPAST_HPC_LIB_DIR=-L$(HOME)/software/repast_hpc-$(REPASTVERSION)/lib
+REPAST_HPC_LIB=-lrepast_hpc-$(REPASTVERSION) -lrelogo-$(REPASTVERSION)
+
+LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(HOME)/software/boost/boost_$(BOOST_VERSION)/stage/lib -Wl,-rpath -Wl,$(HOME)/software/repast_hpc-$(REPASTVERSION)/lib
+
