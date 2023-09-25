@@ -559,6 +559,8 @@ void  AnasaziModel::updateLocationProperties()
 void AnasaziModel::updateHouseholdProperties()
 {
 	int noOfAgents = context.size();
+	if (noOfAgents < 1)
+		return;
     std::vector<Household*> agents;
     context.selectAgents(repast::SharedContext<Household>::LOCAL, noOfAgents, agents);
     std::vector<Household*>::iterator it = agents.begin();
