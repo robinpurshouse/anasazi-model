@@ -665,14 +665,15 @@ void AnasaziModel::removeHousehold(Household* household)
 		householdSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), householdList);
 		if(householdList.size() == 1)
 		{
-			locationList[0]->setState(0);
+			locationList[0]->setState(0);  // set the state to empty if there is only one household in this location
 		}
 		if(household->getAssignedField()!= NULL)
 		{
+			std::vector<Location*> locationList2;
 			std::vector<int> loc;
 			locationSpace->getLocation(household->getAssignedField()->getId(), loc);
-			locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList);
-			locationList[0]->setState(0);
+			locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList2);
+			locationList2[0]->setState(0);  // set the state of the location to empty
 		}
 	}
 
