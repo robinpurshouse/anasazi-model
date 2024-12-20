@@ -134,31 +134,26 @@ void AnasaziModel::initAgents()
 	int noOfAgents  = repast::strToInt(props->getProperty("count.of.agents"));
 	repast::IntUniformGenerator xGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeX-1));
 	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY-1));
-	for(int i =0; i< noOfAgents;i++)
+	for(int i=0; i<noOfAgents; i++)
 	{
 		repast::AgentId id(houseID, rank, 2);
 		int initAge = initAgeGen->next();
 		int mStorage = initMaizeGen->next();
 		Household* agent = new Household(id, initAge, deathAgeGen->next(), mStorage);
 		context.addAgent(agent);
-		std::vector<Location*> locationList;
 
-		newLocation:
-		int x = xGen.next();
-		int y = yGen.next();
-		locationSpace->getObjectsAt(repast::Point<int>(x, y), locationList);
-
-		if(locationList[0]->getState()==2)
-		{
-			locationList.clear();
-			goto newLocation;
-		}
-		else
-		{
-			householdSpace->moveTo(id, repast::Point<int>(x, y));
-			locationList[0]->setState(1);
-		}
-
+		bool houseNotFound = true;
+		do {
+			int x = xGen.next();
+			int y = yGen.next();
+			repast::Point<int> locationRepast(x,y);
+			Location* randomLocation = locationSpace->getObjectAt(locationRepast);
+			if(randomLocation->getState() != 2) {  // as long is not a field (it could be empty or the residence of another household)
+				householdSpace->moveTo(id, locationRepast);
+				randomLocation->setState(1);
+				houseNotFound = false;
+			}
+		} while(houseNotFound);
 
 		houseID++;
 	}
@@ -176,14 +171,14 @@ void AnasaziModel::initAgents()
 			repast::AgentId id = household->getId();
 			local_agents_iter++;
 
-			std::vector<int> loc;
-			householdSpace->getLocation(id, loc);
+			std::vector<int> houseIntLocation;
+			householdSpace->getLocation(id, houseIntLocation);
 
 			std::vector<Location*> locationList;
-			if(!loc.empty())
+			if(!houseIntLocation.empty())
 			{
-				locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList);
-				locationList[0]->setState(0);
+				Location* householdLocation = locationSpace->getObjectAt(repast::Point<int>(houseIntLocation));
+				householdLocation->setState(0);  // set the household residence to empty
 			}
 			context.removeAgent(id);
 		}
@@ -606,21 +601,32 @@ void AnasaziModel::updateHouseholdProperties()
 bool AnasaziModel::fieldSearch(Household* household)
 {
 	/******** Choose Field ********/
-	std::vector<int> loc;
-	householdSpace->getLocation(household->getId(), loc);
-	repast::Point<int> center(loc);
+	std::vector<int> houseIntLocation;
+	householdSpace->getLocation(household->getId(), houseIntLocation);
+	repast::Point<int> center(houseIntLocation);
 
 	std::vector<Location*> neighbouringLocations;
 	std::vector<Location*> checkedLocations;
 	repast::Moore2DGridQuery<Location> moore2DQuery(locationSpace);
+
+	int maxRangeX = std::max(std::abs(houseIntLocation[0] - boardSizeX), houseIntLocation[0]);
+	int maxRangeY = std::max(std::abs(houseIntLocation[1] - boardSizeY), houseIntLocation[1]);
+	int maxRange = std::max(maxRangeX, maxRangeY);
+
 	int range = 1;
 	while(1)
 	{
-		moore2DQuery.query(loc, range, false, neighbouringLocations);
+		moore2DQuery.query(houseIntLocation, range, false, neighbouringLocations);
 
 		for (std::vector<Location*>::iterator it = neighbouringLocations.begin() ; it != neighbouringLocations.end(); ++it)
 		{
 			Location* tempLoc = (&**it);
+			if (std::find(checkedLocations.begin(), checkedLocations.end(), tempLoc) != checkedLocations.end())
+			{
+				continue;
+			}
+			checkedLocations.push_back(tempLoc);
+
 			if(tempLoc->getState() == 0)
 			{
 				if(tempLoc->getExpectedYield() >= param.householdNeed)
@@ -632,8 +638,9 @@ bool AnasaziModel::fieldSearch(Household* household)
 				}
 			}
 		}
+		neighbouringLocations.clear();
 		range++;
-		if(range > boardSizeY)
+		if(range > maxRange)
 		{
 			removeHousehold(household);
 			return false;
@@ -654,26 +661,24 @@ void AnasaziModel::removeHousehold(Household* household)
 {
 	repast::AgentId id = household->getId();
 
-	std::vector<int> loc;
-	householdSpace->getLocation(id, loc);
+	std::vector<int> houseIntLocation;
+	householdSpace->getLocation(id, houseIntLocation);
 
-	std::vector<Location*> locationList;
 	std::vector<Household*> householdList;
-	if(!loc.empty())
+	if(!houseIntLocation.empty())
 	{
-		locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList);
-		householdSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), householdList);
+		Location* householdLocation = locationSpace->getObjectAt(repast::Point<int>(houseIntLocation));
+		householdSpace->getObjectsAt(repast::Point<int>(houseIntLocation), householdList);
 		if(householdList.size() == 1)
 		{
-			locationList[0]->setState(0);  // set the state to empty if there is only one household in this location
+			householdLocation->setState(0);  // set the state to empty if there is only one household in this location
 		}
 		if(household->getAssignedField()!= NULL)
 		{
-			std::vector<Location*> locationList2;
-			std::vector<int> loc;
-			locationSpace->getLocation(household->getAssignedField()->getId(), loc);
-			locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList2);
-			locationList2[0]->setState(0);  // set the state of the location to empty
+			std::vector<int> fieldIntLocation;
+			locationSpace->getLocation(household->getAssignedField()->getId(), fieldIntLocation);
+			Location* fieldLocation = locationSpace->getObjectAt(repast::Point<int>(fieldIntLocation));
+			fieldLocation->setState(0);
 		}
 	}
 
@@ -682,43 +687,54 @@ void AnasaziModel::removeHousehold(Household* household)
 
 bool AnasaziModel::relocateHousehold(Household* household)
 {
-	std::vector<Location*> neighbouringLocations;
-	std::vector<Location*> suitableLocations;
+	std::vector<Location*> fieldNeighbouringLocations;
+	std::vector<Location*> suitableHouseholdLocations;
 	std::vector<Location*> waterSources;
-	std::vector<Location*> checkedLocations;
 
-	std::vector<int> loc, loc2;
-	locationSpace->getLocation(household->getAssignedField()->getId(), loc);
-	householdSpace->getLocation(household->getId(),loc2);
+	std::vector<int> fieldIntLocation, houseIntLocation;
+	// get the location of the field and household
+	locationSpace->getLocation(household->getAssignedField()->getId(), fieldIntLocation);
+	householdSpace->getLocation(household->getId(), houseIntLocation);
 
-	locationSpace->getObjectsAt(repast::Point<int>(loc2[0], loc2[1]), neighbouringLocations);
-	Location* householdLocation = neighbouringLocations[0];
+	Location* householdLocation = locationSpace->getObjectAt(repast::Point<int>(houseIntLocation));
 
-	repast::Point<int> center(loc);
+	int maxRangeX = std::max(std::abs(fieldIntLocation[0] - boardSizeX), fieldIntLocation[0]);
+	int maxRangeY = std::max(std::abs(fieldIntLocation[1] - boardSizeY), fieldIntLocation[1]);
+	int maxRange = std::max(maxRangeX, maxRangeY);
+
 	repast::Moore2DGridQuery<Location> moore2DQuery(locationSpace);
 	int range = floor(param.maxDistance/100);
 	int i = 1;
 	bool conditionC = true;
 
+	std::vector<Location*> checkedHouseLocations;
+
 	//get all !Field with 1km
 	LocationSearch:
-		moore2DQuery.query(loc, range*i, false, neighbouringLocations);
-		for (std::vector<Location*>::iterator it = neighbouringLocations.begin() ; it != neighbouringLocations.end(); ++it)
+		moore2DQuery.query(fieldIntLocation, range*i, false, fieldNeighbouringLocations);
+		for (std::vector<Location*>::iterator it = fieldNeighbouringLocations.begin() ; it != fieldNeighbouringLocations.end(); ++it)
 		{
-			Location* tempLoc = (&**it);
-			if(tempLoc->getState() != 2)
+			Location* tempHouseLoc = (&**it);
+			if (std::find(checkedHouseLocations.begin(), checkedHouseLocations.end(), tempHouseLoc) != checkedHouseLocations.end())
 			{
-				if(householdLocation->getExpectedYield() < tempLoc->getExpectedYield() && conditionC == true)
+				continue;
+			}
+			checkedHouseLocations.push_back(tempHouseLoc);
+
+			if(tempHouseLoc->getState() != 2)
+			{
+				if(householdLocation->getExpectedYield() < tempHouseLoc->getExpectedYield() && conditionC == true)
 				{
-					suitableLocations.push_back(tempLoc);
+					suitableHouseholdLocations.push_back(tempHouseLoc);
 				}
-				if(tempLoc->getWater())
+				if(tempHouseLoc->getWater())
 				{
-					waterSources.push_back(tempLoc);
+					waterSources.push_back(tempHouseLoc);
 				}
 			}
 		}
-		if(suitableLocations.size() == 0 || waterSources.size() == 0)
+		fieldNeighbouringLocations.clear();
+		if(suitableHouseholdLocations.size() == 0 || waterSources.size() == 0)
 		{
 			if(conditionC == true)
 			{
@@ -728,7 +744,7 @@ bool AnasaziModel::relocateHousehold(Household* household)
 			{
 				conditionC = true;
 				i++;
-				if(range*i > boardSizeY)
+				if(range*i > maxRange)
 				{
 					removeHousehold(household);
 					return false;
@@ -736,32 +752,35 @@ bool AnasaziModel::relocateHousehold(Household* household)
 			}
 			goto LocationSearch;
 		}
-		else if(suitableLocations.size() == 1)
+		else if(suitableHouseholdLocations.size() == 1)
 		{
-			std::vector<int> loc2;
-			locationSpace->getLocation(suitableLocations[0]->getId(),loc2);
-			householdSpace->moveTo(household->getId(),repast::Point<int>(loc2[0], loc2[1]));
+			std::vector<int> futureHouseIntLocation;
+			locationSpace->getLocation(suitableHouseholdLocations[0]->getId(), futureHouseIntLocation);
+			householdSpace->moveTo(household->getId(),repast::Point<int>(futureHouseIntLocation));
 			return true;
 		}
 		else
 		{
 			std::vector<int> point1, point2;
-			std::vector<double> distances;
-			for (std::vector<Location*>::iterator it1 = suitableLocations.begin() ; it1 != suitableLocations.end(); ++it1)
+			std::vector<double> minDistances;
+			for (std::vector<Location*>::iterator it1 = suitableHouseholdLocations.begin(); it1 != suitableHouseholdLocations.end(); ++it1)
 			{
-				locationSpace->getLocation((&**it1)->getId(),point1);
-				for (std::vector<Location*>::iterator it2 = waterSources.begin() ; it2 != waterSources.end(); ++it2)
+				locationSpace->getLocation((&**it1)->getId(), point1);
+				std::vector<double> distances;
+				for (std::vector<Location*>::iterator it2 = waterSources.begin(); it2 != waterSources.end(); ++it2)
 				{
-					locationSpace->getLocation((&**it2)->getId(),point2);
-					double distance = sqrt(pow((point1[0]-point2[0]),2) + pow((point1[1]-point2[1]),2));
+					locationSpace->getLocation((&**it2)->getId(), point2);
+					double distance = sqrt(pow((point1[0]-point2[0]), 2) + pow((point1[1]-point2[1]), 2));
 					distances.push_back(distance);
 				}
+				minDistances.push_back(*std::min_element(distances.begin(), distances.end()));
 			}
-			int minElementIndex = std::min_element(distances.begin(),distances.end()) - distances.begin();
-			minElementIndex = minElementIndex / waterSources.size();
-			std::vector<int> loc2;
-			locationSpace->getLocation(suitableLocations[minElementIndex]->getId(),loc2);
-			householdSpace->moveTo(household->getId(),repast::Point<int>(loc2[0], loc2[1]));
+
+			// Select the household location with the closest water source
+			int minElementIndex = std::min_element(minDistances.begin(), minDistances.end()) - minDistances.begin();
+			std::vector<int> futureHouseIntLocation;
+			locationSpace->getLocation(suitableHouseholdLocations[minElementIndex]->getId(),futureHouseIntLocation);
+			householdSpace->moveTo(household->getId(),repast::Point<int>(futureHouseIntLocation));
 			return true;
 		}
 }
