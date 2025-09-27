@@ -1,15 +1,15 @@
 MPICXX=/usr/bin/mpicxx
 
 REPASTVERSION=2.3.1
-BOOST_VERSION=1_86_0
 
-BOOST_INCLUDE=-isystem $(HOME)/software/boost/boost_$(BOOST_VERSION)
-BOOST_LIB_DIR=-L$(HOME)/software/boost/boost_$(BOOST_VERSION)/stage/lib
+BOOST_INCLUDE=-isystem /usr/include/boost
+BOOST_LIB_PATH=/usr/lib/x86_64-linux-gnu
+BOOST_LIB_DIR=-L$(BOOST_LIB_PATH)
 BOOST_LIBS=-lboost_mpi -lboost_serialization -lboost_filesystem -lboost_system
 
 REPAST_HPC_INCLUDE=-isystem $(HOME)/software/repast_hpc-$(REPASTVERSION)/include
 REPAST_HPC_LIB_DIR=-L$(HOME)/software/repast_hpc-$(REPASTVERSION)/lib
 REPAST_HPC_LIB=-lrepast_hpc-$(REPASTVERSION) -lrelogo-$(REPASTVERSION)
 
-LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(HOME)/software/boost/boost_$(BOOST_VERSION)/stage/lib -Wl,-rpath -Wl,$(HOME)/software/repast_hpc-$(REPASTVERSION)/lib
+LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(BOOST_LIB_PATH) -Wl,-rpath -Wl,$(HOME)/software/repast_hpc-$(REPASTVERSION)/lib
 
