@@ -1,0 +1,16 @@
+MPICXX=/opt/apps/testapps/el7/software/staging/OpenMPI/3.1.1-GCC-7.3.0-2.30/bin/mpicxx
+
+REPASTVERSION=2.3.1
+
+BOOST_INCLUDE_PATH=/opt/apps/testapps/el7/software/staging/Boost/1.73.0-foss-2018b/include
+BOOST_INCLUDE=-isystem $(BOOST_INCLUDE_PATH)
+BOOST_LIB_DIR=-L$(HOME)/software/boost/boost_$(BOOST_VERSION)/stage/lib
+BOOST_LIBS=-lboost_mpi -lboost_serialization -lboost_filesystem -lboost_system
+
+REPAST_PATH=/opt/apps/testapps/el7/software/staging/RepastHPC-Boost1.73.0/2.3.1-foss-2018b
+REPAST_HPC_INCLUDE=-isystem $(REPAST_PATH)/include
+REPAST_HPC_LIB_DIR=-L$(REPAST_PATH)/lib
+REPAST_HPC_LIB=-lrepast_hpc-$(REPASTVERSION) -lrelogo-$(REPASTVERSION)
+
+LDFLAGS=-Wl,--disable-new-dtags -Wl,-rpath -Wl,$(BOOST_INCLUDE_PATH) -Wl,-rpath -Wl,$(REPAST_PATH)/lib
+
