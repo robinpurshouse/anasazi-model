@@ -19,7 +19,7 @@ Household::~Household()
 
 }
 
-int Household::splitMaizeStored(int percentage)
+int Household::splitMaizeStored(double percentage)
 {
 	int maizeEndowment;
 	maizeEndowment = maizeStorage * percentage;

@@ -25,7 +25,7 @@ public:
 
 	/* Getters specific to this kind of Agent */
 	Location* getAssignedField(){return assignedField; }
-	int splitMaizeStored(int percentage);
+	int splitMaizeStored(double percentage);
 	bool checkMaize(int needs);
 	bool death();
 	bool fission(int minFissionAge, int maxFissionAge, double gen, double fProb);
