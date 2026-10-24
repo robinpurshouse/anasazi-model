@@ -19,6 +19,7 @@
 #include "repast_hpc/Moore2DGridQuery.h"
 
 #include "Model.h"
+#include <unordered_set>
 
 // substracts b<T> to a<T>
 template <typename T>
@@ -606,7 +607,7 @@ bool AnasaziModel::fieldSearch(Household* household)
 	repast::Point<int> center(houseIntLocation);
 
 	std::vector<Location*> neighbouringLocations;
-	std::vector<Location*> checkedLocations;
+	std::unordered_set<Location*> checkedLocations;  // perf: O(1) lookup instead of std::find on a vector; same behaviour
 	repast::Moore2DGridQuery<Location> moore2DQuery(locationSpace);
 
 	int maxRangeX = std::max(std::abs(houseIntLocation[0] - boardSizeX), houseIntLocation[0]);
@@ -621,11 +622,11 @@ bool AnasaziModel::fieldSearch(Household* household)
 		for (std::vector<Location*>::iterator it = neighbouringLocations.begin() ; it != neighbouringLocations.end(); ++it)
 		{
 			Location* tempLoc = (&**it);
-			if (std::find(checkedLocations.begin(), checkedLocations.end(), tempLoc) != checkedLocations.end())
+			if (checkedLocations.count(tempLoc) != 0)
 			{
 				continue;
 			}
-			checkedLocations.push_back(tempLoc);
+			checkedLocations.insert(tempLoc);
 
 			if(tempLoc->getState() == 0)
 			{
@@ -707,7 +708,7 @@ bool AnasaziModel::relocateHousehold(Household* household)
 	int i = 1;
 	bool conditionC = true;
 
-	std::vector<Location*> checkedHouseLocations;
+	std::unordered_set<Location*> checkedHouseLocations;  // perf: O(1) lookup instead of std::find on a vector; same behaviour
 
 	//get all !Field with 1km
 	LocationSearch:
@@ -715,11 +716,11 @@ bool AnasaziModel::relocateHousehold(Household* household)
 		for (std::vector<Location*>::iterator it = fieldNeighbouringLocations.begin() ; it != fieldNeighbouringLocations.end(); ++it)
 		{
 			Location* tempHouseLoc = (&**it);
-			if (std::find(checkedHouseLocations.begin(), checkedHouseLocations.end(), tempHouseLoc) != checkedHouseLocations.end())
+			if (checkedHouseLocations.count(tempHouseLoc) != 0)
 			{
 				continue;
 			}
-			checkedHouseLocations.push_back(tempHouseLoc);
+			checkedHouseLocations.insert(tempHouseLoc);
 
 			if(tempHouseLoc->getState() != 2)
 			{
