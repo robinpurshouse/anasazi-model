@@ -11,7 +11,7 @@ Household::Household(repast::AgentId id, int a, int deAge, int mStorage)
 	age = a;
 	deathAge = deAge;
 	maizeStorage = mStorage;
-	assignedField = NULL;
+	assignedField = nullptr;
 }
 
 Household::~Household()
@@ -72,7 +72,7 @@ void Household::nextYear(int needs)
 void Household::chooseField(Location* Field)
 {
 	//set the old location as emtpy
-	if (assignedField!=NULL) assignedField->setState(0);
+	if (assignedField != nullptr) assignedField->setState(0);
 
 	//set the new location as a field
 	Field->setState(2);
