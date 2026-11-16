@@ -1,6 +1,7 @@
 #ifndef MODEL
 #define MODEL
 
+#include <unordered_set>
 #include <boost/mpi.hpp>
 #include "repast_hpc/Schedule.h"
 #include "repast_hpc/Properties.h"
@@ -86,6 +87,16 @@ private:
 	repast::IntUniformGenerator* initAgeGen;// = repast::Random::instance()->createUniIntGenerator(0,29);
 	repast::IntUniformGenerator* initMaizeGen;// = repast::Random::instance()->createUniIntGenerator(1000,1600);
 
+	Location* searchNeigbourhoodForField(
+		const std::vector<Location*>& neighbouringLocations, 
+		std::unordered_set<Location*>& visitedLocations
+	);
+
+	Location* searchNeibourhoodforResidence(
+		const std::vector<Location*>& neighbouringLocations, 
+		std::unordered_set<Location*>& visitedLocations,
+		int fieldExpectedYield
+	);
 
 public:
 	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
